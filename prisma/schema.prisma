@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  parentId    String?    @map("parent_id")
+  parent      Category?  @relation("CategoryToSubcategory", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[] @relation("CategoryToSubcategory")
+  posts       Post[]     @relation("CategoryPosts")
+  subPosts    Post[]     @relation("SubcategoryPosts")
+  order       Int        @default(0)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("categories")
+}
+
+model Post {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  content         String
+  excerpt         String?
+  featuredImage   String?   @map("featured_image")
+  categoryId      String    @map("category_id")
+  category        Category  @relation("CategoryPosts", fields: [categoryId], references: [id])
+  subcategoryId   String?   @map("subcategory_id")
+  subcategory     Category? @relation("SubcategoryPosts", fields: [subcategoryId], references: [id])
+  metaTitle       String?   @map("meta_title")
+  metaDescription String?   @map("meta_description")
+  metaKeywords    String?   @map("meta_keywords")
+  status          String    @default("draft")
+  views           Int       @default(0)
+  commentsEnabled Boolean   @default(true) @map("comments_enabled")
+  comments        Comment[]
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([status])
+  @@index([slug])
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  content   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([postId])
+  @@index([status])
+  @@map("comments")
+}
+
+model SiteSettings {
+  id               String  @id @default(cuid())
+  siteName         String  @default("HealthBlog") @map("site_name")
+  siteDescription  String? @map("site_description")
+  commentsEnabled  Boolean @default(true) @map("comments_enabled")
+  postsPerPage     Int     @default(12) @map("posts_per_page")
+
+  @@map("site_settings")
+}
