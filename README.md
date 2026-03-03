@@ -1,6 +1,6 @@
 # Health Blog Project
 
-This is a modern, full-stack health blog built with [Next.js](https://nextjs.org), Prisma, and PostgreSQL.
+This is a modern, full-stack health blog built with [Next.js](https://nextjs.org), Prisma (v5), and PostgreSQL.
 
 ## Features
 - SEO-friendly dynamic blog posts
